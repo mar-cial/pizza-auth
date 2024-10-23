@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/mar-cial/pizza-auth/internal/domain"
 	"github.com/mar-cial/pizza-auth/internal/repository"
 	"github.com/redis/go-redis/v9"
@@ -24,13 +23,13 @@ func NewRedisAuthSessionRepo(client *redis.Client) repository.AuthSession {
 	return &authSessionRepo{client: client}
 }
 
-func (a *authSessionRepo) CreateSession(ctx context.Context, userID string) error {
+func (a *authSessionRepo) CreateSession(ctx context.Context, userID, token string) error {
 	session := domain.Session{
-		Token:  uuid.NewString(),
+		Token:  token,
 		UserID: userID,
 	}
 
-	sessionkey := fmt.Sprintf("user:session:%s", session.Token)
+	sessionkey := fmt.Sprintf("user:session:%s", token)
 
 	result, err := a.client.Set(ctx, sessionkey, session.UserID, time.Hour*24*7).Result()
 	if err != nil {

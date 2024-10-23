@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/mar-cial/pizza-auth/internal/domain"
 	"github.com/mar-cial/pizza-auth/internal/repository"
 	"golang.org/x/crypto/bcrypt"
@@ -33,7 +34,9 @@ func (a *authService) Register(ctx context.Context, user domain.User) error {
 		return err
 	}
 
-	return a.sessions.CreateSession(ctx, user.ID)
+	token := uuid.NewString()
+
+	return a.sessions.CreateSession(ctx, user.ID, token)
 }
 
 func (a *authService) Login(ctx context.Context, creds domain.Credentials) error {
