@@ -19,34 +19,30 @@ type authSessionRepo struct {
 	client *redis.Client
 }
 
-func NewRedisAuthSessionRepo(client *redis.Client) repository.AuthSession {
-	return &authSessionRepo{client: client}
-}
-
-func (a *authSessionRepo) CreateSession(ctx context.Context, userID, token string) error {
+func (a *authSessionRepo) CreateSession(ctx context.Context, userid, token string) error {
 	session := domain.Session{
 		Token:  token,
-		UserID: userID,
+		UserID: userid,
 	}
 
-	sessionkey := fmt.Sprintf("user:session:%s", token)
+	key := fmt.Sprintf("session:%s", session.UserID)
 
-	result, err := a.client.Set(ctx, sessionkey, session.UserID, time.Hour*24*7).Result()
+	_, err := a.client.Set(ctx, key, session.Token, time.Hour*24*7).Result()
 	if err != nil {
 		return err
-	}
-
-	if result != "OK" {
-		return ErrNotOk
 	}
 
 	return nil
 }
 
-func (a *authSessionRepo) DeleteSession(ctx context.Context, sessionToken string) error {
-	sessionkey := fmt.Sprintf("user:session:%s", sessionToken)
+func (a *authSessionRepo) DeleteSession(ctx context.Context, userid string) error {
+	sessionkey := fmt.Sprintf("session:%s", userid)
 
 	_, err := a.client.Del(ctx, sessionkey).Result()
 
 	return err
+}
+
+func NewRedisAuthSessionRepo(client *redis.Client) repository.AuthSession {
+	return &authSessionRepo{client: client}
 }

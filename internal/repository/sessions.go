@@ -5,6 +5,6 @@ import (
 )
 
 type AuthSession interface {
-	CreateSession(ctx context.Context, userID, token string) error
-	DeleteSession(ctx context.Context, sessionToken string) error
+	CreateSession(ctx context.Context, userid, token string) error
+	DeleteSession(ctx context.Context, userid string) error
 }

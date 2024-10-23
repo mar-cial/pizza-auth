@@ -2,10 +2,12 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
 	"github.com/go-redis/redismock/v9"
+	"github.com/google/uuid"
 )
 
 func TestNewRedisAuthSessionRepo(t *testing.T) {
@@ -19,18 +21,49 @@ func TestNewRedisAuthSessionRepo(t *testing.T) {
 }
 
 func TestCreateSession(t *testing.T) {
-
 	db, mock := redismock.NewClientMock()
 
 	authSessionRepo := NewRedisAuthSessionRepo(db)
 
-	mock.ExpectSet(redismock.CustomMatch(`user:session:*`), time.Hour*24*7).SetVal("OK")
+	token := uuid.NewString()
+	userid := uuid.NewString()
+	key := fmt.Sprintf("session:%s", userid)
 
-	if err := authSessionRepo.CreateSession(context.Background(), "1"); err != nil {
+	ctx := context.Background()
+
+	mock.ExpectSet(key, token, time.Hour*24*7).SetVal("OK")
+	if err := authSessionRepo.CreateSession(ctx, userid, token); err != nil {
+		t.Error(err)
+	}
+
+	mock.ExpectSet(key, token, time.Hour*24*7).SetErr(fmt.Errorf("redis error"))
+	if err := authSessionRepo.CreateSession(ctx, userid, token); err == nil {
 		t.Error(err)
 	}
 
 	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestDeleteSession(t *testing.T) {
+	db, mock := redismock.NewClientMock()
+
+	authSessionRepo := NewRedisAuthSessionRepo(db)
+
+	ctx := context.Background()
+	userid := uuid.NewString()
+	token := uuid.NewString()
+	key := fmt.Sprintf("session:%s", userid)
+
+	mock.ExpectSet(key, token, time.Hour*24*7).SetVal("OK")
+	if err := authSessionRepo.CreateSession(ctx, userid, token); err != nil {
+		t.Error(err)
+	}
+
+	mock.ExpectDel(key).SetVal(1)
+
+	if err := authSessionRepo.DeleteSession(ctx, userid); err != nil {
 		t.Error(err)
 	}
 }

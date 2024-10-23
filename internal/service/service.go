@@ -49,7 +49,9 @@ func (a *authService) Login(ctx context.Context, creds domain.Credentials) error
 		return err
 	}
 
-	return a.sessions.CreateSession(ctx, user.ID)
+	token := uuid.NewString()
+
+	return a.sessions.CreateSession(ctx, user.ID, token)
 }
 
 func (a *authService) Logout(ctx context.Context, sessionToken string) error {
