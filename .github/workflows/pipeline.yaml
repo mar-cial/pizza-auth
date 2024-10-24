@@ -1,4 +1,4 @@
-name: Pizza Auth Service Deployment
+name: CI/CD Pipeline
 
 on:
   push:
@@ -8,32 +8,3 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: '1.23'
-      - name: Install dependencies
-        run: go mod tidy
-      - name: Build app
-        run: go build -v ./...
-  test:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Run tests
-        run: go test -v ./...
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - name: Deploy to AWS
-        run: |
-          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID}} 
-          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws configure set default.region us-west-1
-          aws ecs update-service --cluster pizza-auth-cluster --service auth --force-new-deployment
-
