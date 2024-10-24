@@ -18,8 +18,9 @@ func main() {
 
 	usersRepo := repository.NewRedisAuthUsersRepo(client)
 	sessionsRepo := repository.NewRedisAuthSessionRepo(client)
+	lookupRepo := repository.NewRedisLookupRepo(client)
 
-	srv := service.NewAuthService(usersRepo, sessionsRepo)
+	srv := service.NewAuthService(usersRepo, sessionsRepo, lookupRepo)
 
 	handler := handler.NewAuthHandler(srv)
 

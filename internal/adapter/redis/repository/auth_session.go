@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/mar-cial/pizza-auth/internal/domain"
 	"github.com/mar-cial/pizza-auth/internal/repository"
 	"github.com/redis/go-redis/v9"
 )
@@ -20,14 +19,7 @@ type authSessionRepo struct {
 }
 
 func (a *authSessionRepo) CreateSession(ctx context.Context, userid, token string) error {
-	session := domain.Session{
-		Token:  token,
-		UserID: userid,
-	}
-
-	key := fmt.Sprintf("session:%s", session.UserID)
-
-	_, err := a.client.Set(ctx, key, session.Token, time.Hour*24*7).Result()
+	_, err := a.client.Set(ctx, fmt.Sprintf("session:%s", userid), token, time.Hour*24*7).Result()
 	if err != nil {
 		return err
 	}

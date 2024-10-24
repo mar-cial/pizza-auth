@@ -24,7 +24,7 @@ func (a *authHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := domain.User{
+	user := &domain.User{
 		Email:       r.FormValue("email"),
 		Username:    r.FormValue("username"),
 		Password:    r.FormValue("password"),
@@ -43,7 +43,7 @@ func (a *authHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	creds := domain.Credentials{
+	creds := &domain.Credentials{
 		Phonenumber: r.FormValue("phonenumber"),
 		Password:    r.FormValue("password"),
 	}

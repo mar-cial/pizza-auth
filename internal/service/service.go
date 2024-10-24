@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
 	"github.com/mar-cial/pizza-auth/internal/domain"
@@ -9,23 +10,25 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+var (
+	ErrPhonenumberMissing = errors.New("phonenumber missing")
+	ErrPhonenumberExists  = errors.New("account exists")
+)
+
 type AuthService interface {
-	Register(ctx context.Context, user domain.User) error
-	Login(ctx context.Context, creds domain.Credentials) error
-	Logout(ctx context.Context, sessionToken string) error
+	Register(ctx context.Context, user *domain.User) error
+	Login(ctx context.Context, creds *domain.Credentials) error
+	Logout(ctx context.Context, userid string) error
 }
 
 type authService struct {
 	users    repository.AuthUsers
 	sessions repository.AuthSession
+	lookup   repository.AuthLookup
 }
 
-func NewAuthService(usersRepo repository.AuthUsers, sessionsRepo repository.AuthSession) AuthService {
-	return &authService{users: usersRepo, sessions: sessionsRepo}
-}
-
-func (a *authService) Register(ctx context.Context, user domain.User) error {
-	user, err := a.users.UserByPhonenumber(ctx, user.Phonenumber)
+func (a *authService) Register(ctx context.Context, user *domain.User) error {
+	user, err := a.lookup.UserByPhonenumber(ctx, user.Phonenumber)
 	if err != nil {
 		return err
 	}
@@ -39,8 +42,8 @@ func (a *authService) Register(ctx context.Context, user domain.User) error {
 	return a.sessions.CreateSession(ctx, user.ID, token)
 }
 
-func (a *authService) Login(ctx context.Context, creds domain.Credentials) error {
-	user, err := a.users.UserByPhonenumber(ctx, creds.Phonenumber)
+func (a *authService) Login(ctx context.Context, creds *domain.Credentials) error {
+	user, err := a.lookup.UserByPhonenumber(ctx, creds.Phonenumber)
 	if err != nil {
 		return err
 	}
@@ -54,6 +57,10 @@ func (a *authService) Login(ctx context.Context, creds domain.Credentials) error
 	return a.sessions.CreateSession(ctx, user.ID, token)
 }
 
-func (a *authService) Logout(ctx context.Context, sessionToken string) error {
-	return a.sessions.DeleteSession(ctx, sessionToken)
+func (a *authService) Logout(ctx context.Context, userid string) error {
+	return a.sessions.DeleteSession(ctx, userid)
+}
+
+func NewAuthService(ur repository.AuthUsers, sr repository.AuthSession, l repository.AuthLookup) AuthService {
+	return &authService{users: ur}
 }

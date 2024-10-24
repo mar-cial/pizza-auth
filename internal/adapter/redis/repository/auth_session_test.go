@@ -25,20 +25,20 @@ func TestCreateSession(t *testing.T) {
 
 	authSessionRepo := NewRedisAuthSessionRepo(db)
 
-	token := uuid.NewString()
-	userid := uuid.NewString()
-	key := fmt.Sprintf("session:%s", userid)
-
 	ctx := context.Background()
+
+	userid := uuid.NewString()
+	token := uuid.NewString()
+	key := fmt.Sprintf("session:%s", userid)
 
 	mock.ExpectSet(key, token, time.Hour*24*7).SetVal("OK")
 	if err := authSessionRepo.CreateSession(ctx, userid, token); err != nil {
 		t.Error(err)
 	}
 
-	mock.ExpectSet(key, token, time.Hour*24*7).SetErr(fmt.Errorf("redis error"))
-	if err := authSessionRepo.CreateSession(ctx, userid, token); err == nil {
-		t.Error(err)
+	mock.ExpectDel(key).SetErr(fmt.Errorf("redis error"))
+	if err := authSessionRepo.DeleteSession(ctx, userid); err == nil {
+		t.Error("expected an error but got nil")
 	}
 
 	if err := mock.ExpectationsWereMet(); err != nil {
@@ -53,17 +53,14 @@ func TestDeleteSession(t *testing.T) {
 
 	ctx := context.Background()
 	userid := uuid.NewString()
-	token := uuid.NewString()
 	key := fmt.Sprintf("session:%s", userid)
 
-	mock.ExpectSet(key, token, time.Hour*24*7).SetVal("OK")
-	if err := authSessionRepo.CreateSession(ctx, userid, token); err != nil {
+	mock.ExpectDel(key).SetVal(1)
+	if err := authSessionRepo.DeleteSession(ctx, userid); err != nil {
 		t.Error(err)
 	}
 
-	mock.ExpectDel(key).SetVal(1)
-
-	if err := authSessionRepo.DeleteSession(ctx, userid); err != nil {
+	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Error(err)
 	}
 }
