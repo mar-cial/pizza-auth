@@ -2,11 +2,9 @@ package repository
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/go-redis/redismock/v9"
-	"github.com/google/uuid"
 	"github.com/mar-cial/pizza-auth/internal/domain"
 )
 
@@ -24,10 +22,7 @@ func TestNewRedisAuthUsersRepo(t *testing.T) {
 		Phonenumber: "1231231234",
 	}
 
-	userid := uuid.NewString()
-
-	key := fmt.Sprintf("user:%s", userid)
-	mock.ExpectHSet(key, user)
+	mock.Regexp().ExpectHSet(`^user:[a-z0-9\-]+$`, user).SetVal(1)
 	if err := authUsersRepo.CreateUser(ctx, user); err != nil {
 		t.Error(err)
 	}
