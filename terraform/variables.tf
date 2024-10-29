@@ -4,18 +4,17 @@ variable "aws_region" {
   default     = "us-west-1"
 }
 
-variable "ami_id" {
-  description = "AMI ID to use for EC2 instance"
-  type        = string
+data "aws_ami" "latest_ami" {
+  most_recent = true
+  owners      = ["amazon"]
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+  }
 }
 
 variable "instance_type" {
   description = "Instance type of EC2"
   type        = string
   default     = "t2.micro"
-}
-
-variable "ssh_key_name" {
-  description = "Name of SSH key pair for accessing EC2"
-  type        = string
 }
