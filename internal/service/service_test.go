@@ -19,5 +19,4 @@ func TestNewAuthService(t *testing.T) {
 	if service == nil {
 		t.Errorf("service is nil")
 	}
-
 }
