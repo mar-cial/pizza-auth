@@ -21,6 +21,9 @@ type AuthService interface {
 	Logout(ctx context.Context, userid string) error
 }
 
+// I believe these interfaces are only going to grow,
+// so its a good idea to separate them from the beginning,
+// I BELIEVE.
 type authService struct {
 	users    repository.AuthUsers
 	sessions repository.AuthSession
