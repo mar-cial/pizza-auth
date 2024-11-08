@@ -9,3 +9,9 @@ variable "instance_type" {
   type        = string
   default     = "t2.micro"
 }
+
+variable "ami_id" {
+  description = "Instance type of EC2"
+  type        = string
+  default     = "t2.micro"
+}
