@@ -11,7 +11,11 @@ variable "instance_type" {
 }
 
 variable "ami_id" {
-  description = "Instance type of EC2"
+  description = "AMI ID"
   type        = string
-  default     = "t2.micro"
+}
+
+variable "ssh_key_name" {
+  description = "ssh key name"
+  type        = string
 }
